@@ -29,6 +29,7 @@ fn hexdump(buffer: &Vec<u8>) {
         print!("{:0>4X}:  ", i * 16);
         for j in 0..16 {
             print!("{:0>2X} ", buffer[j + i*16]);
+            // Spacing to make output easier to read
             if (j+1) % 4 == 0 {
                 print!(" ");
             }
@@ -41,6 +42,7 @@ fn hexdump(buffer: &Vec<u8>) {
 fn convert_greyscale(buffer: &Vec<u8>, offset: usize) -> Vec<u8> {
     let mut greyscale_vec = buffer.to_vec();
 
+    // Step three because BMP RGB colors in three bytes
     for i in (offset..buffer.len()).step_by(3) {
         for j in 0..3 {
             greyscale_vec[i + j] = buffer[i+1] as u8;
@@ -60,6 +62,7 @@ fn write_file(buffer: Vec<u8>, output_file: String) -> io::Result<()> {
 fn sobel_filter(pixels: Vec<u8>, offset: i32, width: i32) -> Vec<u8> {
     let mut sobel_vec = pixels.to_vec();
 
+    // Sobel filter horizontal and vertical
     let sobel_x: [[i32; 3];3] = [
         [-1, 0, 1],
         [-2, 0, 2],
@@ -79,7 +82,7 @@ fn sobel_filter(pixels: Vec<u8>, offset: i32, width: i32) -> Vec<u8> {
             for x in 0usize..3 {
                 let position: i32 = i + ((y as i32 - 1) * width * 3) + ((x as i32 - 1) * 3);
 
-
+                // Check for out of bound
                 if position > offset && position < (pixels.len() as i32) {
                     let position = position as usize;
                     sum_x += (pixels[position] as i32) * sobel_x[y][x];
@@ -109,10 +112,10 @@ fn main() {
     let output_file = format!("{}.bmp", &args[2]);
 
     let buffer = read_file(input_file).unwrap();
+    // Grab metadata from the file header
     let offset = buffer[10] as usize;
     let width = arr_to_hex(&buffer[18..22]);
     let height = arr_to_hex(&buffer[22..26]);
-
 
     println!("Reading file: {}\nSaving output as: {}", input_file, output_file);
 
